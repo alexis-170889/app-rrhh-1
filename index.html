@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIVRA - Consultoría de RRHH</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <img src="./2.png" alt="MIVRA Logo" id="logo-img">
+                <div class="logo-text">
+                    <h1>MIVRA</h1>
+                    <p>personas + procesos</p>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="nav-link active" data-target="dashboard">Dashboard</a></li>
+                    <li><a href="#" class="nav-link" data-target="empresas">Empresas</a></li>
+                    <li><a href="#" class="nav-link" data-target="servicios">Servicios</a></li>
+                    <li><a href="#" class="nav-link" data-target="documentos">Documentos</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Sección Dashboard -->
+        <section id="dashboard" class="content-section active">
+            <h2>Dashboard</h2>
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <h3>Total Empresas</h3>
+                    <p id="total-empresas">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Servicios Activos</h3>
+                    <p id="servicios-activos">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Próximas Reuniones</h3>
+                    <p id="proximas-reuniones">0</p>
+                </div>
+            </div>
+            
+            <div class="recent-activity">
+                <h3>Actividad Reciente</h3>
+                <ul id="activity-list">
+                    <!-- La actividad se cargará dinámicamente -->
+                </ul>
+            </div>
+        </section>
+
+        <!-- Sección Empresas -->
+        <section id="empresas" class="content-section">
+            <h2>Gestión de Empresas</h2>
+            <button id="add-empresa-btn" class="btn-primary">+ Añadir Empresa</button>
+            
+            <div class="filters">
+                <input type="text" id="empresa-search" placeholder="Buscar empresa...">
+                <select id="servicio-filter">
+                    <option value="">Todos los servicios</option>
+                    <option value="checkup">Check-Up Salud Laboral</option>
+                    <option value="comunicacion">Taller Comunicación</option>
+                    <option value="contratacion">Design Primer Empleado</option>
+                </select>
+            </div>
+            
+            <div class="table-container">
+                <table id="empresas-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Contacto</th>
+                            <th>Servicios</th>
+                            <th>Último Contacto</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Las empresas se cargarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Sección Servicios -->
+        <section id="servicios" class="content-section">
+            <h2>Servicios Ofrecidos</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <h3>Check-Up Salud Laboral</h3>
+                    <p>Evaluación express del clima laboral y procesos de RRHH.</p>
+                    <button class="btn-secondary" data-service="checkup">Seleccionar</button>
+                </div>
+                <div class="service-card">
+                    <h3>Taller de Comunicación</h3>
+                    <p>Sesión vivencial para mejorar la comunicación interna.</p>
+                    <button class="btn-secondary" data-service="comunicacion">Seleccionar</button>
+                </div>
+                <div class="service-card">
+                    <h3>Design Primer Empleado</h3>
+                    <p>Asesoría completa para la primera contratación.</p>
+                    <button class="btn-secondary" data-service="contratacion">Seleccionar</button>
+                </div>
+            </div>
+            
+            <div id="service-details" class="service-details">
+                <!-- Los detalles del servicio se cargarán dinámicamente -->
+            </div>
+        </section>
+
+        <!-- Sección Documentos -->
+        <section id="documentos" class="content-section">
+            <h2>Documentos y Plantillas</h2>
+            <div class="documents-grid">
+                <div class="document-card">
+                    <h3>Kit de Comunicación</h3>
+                    <p>Plantillas para mejorar la comunicación interna.</p>
+                    <button class="btn-secondary" onclick="generarPDF('comunicacion')">Generar PDF</button>
+                </div>
+                <div class="document-card">
+                    <h3>Checklist Onboarding</h3>
+                    <p>Plan de 30 días para incorporación.</p>
+                    <button class="btn-secondary" onclick="generarPDF('onboarding')">Generar PDF</button>
+                </div>
+                <div class="document-card">
+                    <h3>Guía Primera Contratación</h3>
+                    <p>Protocolo para primer empleado.</p>
+                    <button class="btn-secondary" onclick="generarPDF('contratacion')">Generar PDF</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal para añadir/editar empresas -->
+    <div id="empresa-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modal-title">Añadir Nueva Empresa</h2>
+            <form id="empresa-form">
+                <input type="hidden" id="empresa-id">
+                <div class="form-group">
+                    <label for="empresa-nombre">Nombre de la empresa *</label>
+                    <input type="text" id="empresa-nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="empresa-contacto">Persona de contacto *</label>
+                    <input type="text" id="empresa-contacto" required>
+                </div>
+                <div class="form-group">
+                    <label for="empresa-email">Email</label>
+                    <input type="email" id="empresa-email">
+                </div>
+                <div class="form-group">
+                    <label for="empresa-telefono">Teléfono</label>
+                    <input type="tel" id="empresa-telefono">
+                </div>
+                <div class="form-group">
+                    <label for="empresa-servicios">Servicios Contratados</label>
+                    <select id="empresa-servicios" multiple>
+                        <option value="checkup">Check-Up Salud Laboral</option>
+                        <option value="comunicacion">Taller Comunicación</option>
+                        <option value="contratacion">Design Primer Empleado</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="empresa-notas">Notas</label>
+                    <textarea id="empresa-notas" rows="4"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancel-empresa">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Empresa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>MIVRA - personas + process | Sistema de gestión para consultorías de RRHH</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="./app.js"></script>
+</body>
+</html>
