@@ -31,6 +31,8 @@ let actividad = JSON.parse(localStorage.getItem('actividad')) || [
     { tipo: 'servicio', accion: 'asignado', objetivo: 'Design Primer Empleado', empresa: 'DiseñoCreativo', fecha: '2023-11-05' }
 ];
 
+let documentos = JSON.parse(localStorage.getItem('documentos')) || [];
+
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
     initNavigation();
@@ -38,6 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loadEmpresas();
     setupEventListeners();
     loadServiceDetails();
+    loadDocumentButtons();
+    updateEmpresaSelector();
 });
 
 // Navegación
@@ -57,6 +61,11 @@ function initNavigation() {
             // Mostrar sección correspondiente
             sections.forEach(section => section.classList.remove('active'));
             document.getElementById(target).classList.add('active');
+            
+            // Si es la sección de documentos, actualizar el selector
+            if (target === 'documentos') {
+                updateEmpresaSelector();
+            }
         });
     });
 }
@@ -71,9 +80,17 @@ function loadDashboard() {
     }, 0);
     document.getElementById('servicios-activos').textContent = serviciosCount;
     
+    // Próximas reuniones (ficticias para el ejemplo)
+    document.getElementById('proximas-reuniones').textContent = "2";
+    
     // Actividad reciente
     const activityList = document.getElementById('activity-list');
     activityList.innerHTML = '';
+    
+    if (actividad.length === 0) {
+        activityList.innerHTML = '<li>No hay actividad reciente</li>';
+        return;
+    }
     
     actividad.slice().reverse().forEach(item => {
         const li = document.createElement('li');
@@ -100,6 +117,11 @@ function loadDashboard() {
 function loadEmpresas() {
     const empresasTable = document.querySelector('#empresas-table tbody');
     empresasTable.innerHTML = '';
+    
+    if (empresas.length === 0) {
+        empresasTable.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay empresas registradas</td></tr>';
+        return;
+    }
     
     empresas.forEach(empresa => {
         const tr = document.createElement('tr');
@@ -179,6 +201,7 @@ function addEmpresa(e) {
     guardarDatos();
     loadDashboard();
     loadEmpresas();
+    updateEmpresaSelector();
     closeModal();
 }
 
@@ -221,13 +244,14 @@ function deleteEmpresa(id) {
             guardarDatos();
             loadDashboard();
             loadEmpresas();
+            updateEmpresaSelector();
         }
     }
 }
 
 // Servicios
 function loadServiceDetails() {
-    const serviceButtons = document.querySelectorAll('.service-card button');
+    const serviceButtons = document.querySelectorAll('.btn-service');
     
     serviceButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -253,6 +277,7 @@ function mostrarDetallesServicio(service) {
                 </ul>
                 <p><strong>Duración:</strong> 2-3 días</p>
                 <p><strong>Inversión:</strong> €450</p>
+                <button class="btn-primary" onclick="generarPDF('checkup')">Generar Propuesta</button>
             `;
             break;
         case 'comunicacion':
@@ -267,6 +292,7 @@ function mostrarDetallesServicio(service) {
                 </ul>
                 <p><strong>Duración:</strong> 3-4 horas</p>
                 <p><strong>Inversión:</strong> €600 (hasta 10 personas)</p>
+                <button class="btn-primary" onclick="generarPDF('comunicacion')">Generar Propuesta</button>
             `;
             break;
         case 'contratacion':
@@ -281,11 +307,92 @@ function mostrarDetallesServicio(service) {
                 </ul>
                 <p><strong>Duración:</strong> 3-4 semanas</p>
                 <p><strong>Inversión:</strong> €900</p>
+                <button class="btn-primary" onclick="generarPDF('contratacion')">Generar Propuesta</button>
             `;
             break;
     }
     
     serviceDetails.innerHTML = contenido;
+}
+
+// Documentos
+function loadDocumentButtons() {
+    const documentButtons = document.querySelectorAll('.btn-document');
+    
+    documentButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const documentType = button.getAttribute('data-document');
+            const empresaId = document.getElementById('empresa-documento').value;
+            generarPDF(documentType, empresaId);
+        });
+    });
+}
+
+function updateEmpresaSelector() {
+    const selector = document.getElementById('empresa-documento');
+    selector.innerHTML = '<option value="">Seleccione una empresa</option>';
+    
+    empresas.forEach(empresa => {
+        const option = document.createElement('option');
+        option.value = empresa.id;
+        option.textContent = empresa.nombre;
+        selector.appendChild(option);
+    });
+}
+
+function loadGeneratedDocuments() {
+    const documentList = document.getElementById('document-list');
+    documentList.innerHTML = '';
+    
+    if (documentos.length === 0) {
+        documentList.innerHTML = '<p class="empty-state">No hay documentos generados aún</p>';
+        return;
+    }
+    
+    documentos.slice().reverse().forEach(doc => {
+        const docElement = document.createElement('div');
+        docElement.className = 'document-item';
+        
+        docElement.innerHTML = `
+            <div class="document-info">
+                <h4>${doc.nombre}</h4>
+                <p>Generado el ${doc.fecha} para ${doc.empresa || "General"}</p>
+            </div>
+            <div class="document-actions">
+                <button class="btn-secondary" onclick="descargarDocumento('${doc.id}')">Descargar</button>
+                <button class="btn-secondary" onclick="eliminarDocumento('${doc.id}')">Eliminar</button>
+            </div>
+        `;
+        
+        documentList.appendChild(docElement);
+    });
+}
+
+function descargarDocumento(id) {
+    const documento = documentos.find(doc => doc.id === id);
+    if (documento) {
+        // En una implementación real, aquí se recuperaría el PDF guardado
+        alert(`Descargando: ${documento.nombre}`);
+    }
+}
+
+function eliminarDocumento(id) {
+    if (confirm('¿Estás seguro de que quieres eliminar este documento?')) {
+        const index = documentos.findIndex(doc => doc.id === id);
+        if (index !== -1) {
+            documentos.splice(index, 1);
+            guardarDatos();
+            loadGeneratedDocuments();
+            
+            actividad.push({
+                tipo: 'documento',
+                accion: 'eliminado',
+                objetivo: `Documento ${id}`,
+                fecha: new Date().toISOString().split('T')[0]
+            });
+            loadDashboard();
+        }
+    }
 }
 
 // Modal functions
@@ -322,6 +429,16 @@ function setupEventListeners() {
     // Filtros
     document.getElementById('empresa-search').addEventListener('input', filtrarEmpresas);
     document.getElementById('servicio-filter').addEventListener('change', filtrarEmpresas);
+    
+    // Selector de empresa para documentos
+    document.getElementById('empresa-documento').addEventListener('change', function() {
+        const buttons = document.querySelectorAll('.btn-document');
+        if (this.value) {
+            buttons.forEach(btn => btn.disabled = false);
+        } else {
+            buttons.forEach(btn => btn.disabled = true);
+        }
+    });
 }
 
 function filtrarEmpresas() {
@@ -340,6 +457,11 @@ function filtrarEmpresas() {
     // Actualizar tabla
     const empresasTable = document.querySelector('#empresas-table tbody');
     empresasTable.innerHTML = '';
+    
+    if (empresasFiltradas.length === 0) {
+        empresasTable.innerHTML = '<tr><td colspan="5" style="text-align: center;">No se encontraron empresas</td></tr>';
+        return;
+    }
     
     empresasFiltradas.forEach(empresa => {
         const tr = document.createElement('tr');
@@ -382,16 +504,25 @@ function filtrarEmpresas() {
 function guardarDatos() {
     localStorage.setItem('empresas', JSON.stringify(empresas));
     localStorage.setItem('actividad', JSON.stringify(actividad));
+    localStorage.setItem('documentos', JSON.stringify(documentos));
 }
 
 // Generación de PDFs
-function generarPDF(tipo) {
+function generarPDF(tipo, empresaId = null) {
     // Usar jsPDF
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
     let contenido = [];
     let titulo = "";
+    let empresaNombre = "General";
+    
+    if (empresaId) {
+        const empresa = empresas.find(emp => emp.id == empresaId);
+        if (empresa) {
+            empresaNombre = empresa.nombre;
+        }
+    }
     
     switch(tipo) {
         case 'comunicacion':
@@ -427,28 +558,76 @@ function generarPDF(tipo) {
                 {titulo: "Fase 4: INTEGRAR (Mes 1)", texto: "Onboarding: Primer día, primeras 4 semanas, reuniones de seguimiento."}
             ];
             break;
+            
+        case 'evaluacion':
+            titulo = "Formato de Evaluación de Desempeño";
+            contenido = [
+                {titulo: "Datos del Colaborador", texto: "Nombre, puesto, departamento, fecha de evaluación, período evaluado."},
+                {titulo: "Competencias Evaluadas", texto: "Liderazgo, comunicación, trabajo en equipo, orientación a resultados, innovación."},
+                {titulo: "Escala de Evaluación", texto: "1: No cumple expectativas, 2: Cumple parcialmente, 3: Cumple expectativas, 4: Excede expectativas, 5: Supera ampliamente expectativas."},
+                {titulo: "Comentarios del Evaluador", texto: "Espacio para comentarios cualitativos sobre el desempeño."},
+                {titulo: "Plan de Desarrollo", texto: "Áreas de mejora, objetivos, acciones concretas, plazo de cumplimiento."}
+            ];
+            break;
+            
+        case 'desarrollo':
+            titulo = "Plan de Desarrollo Individual";
+            contenido = [
+                {titulo: "Datos del Colaborador", texto: "Nombre, puesto actual, departamento, fecha."},
+                {titulo: "Fortalezas Identificadas", texto: "Listado de fortalezas y talentos naturales."},
+                {titulo: "Áreas de Oportunidad", texto: "Habilidades y competencias a desarrollar."},
+                {titulo: "Objetivos de Desarrollo", texto: "Objetivos SMART específicos para el desarrollo."},
+                {titulo: "Acciones Concretas", texto: "Actividades, cursos, mentorías o proyectos para el desarrollo."},
+                {titulo: "Plazos y Seguimiento", texto: "Cronograma y fechas de revisión del plan."}
+            ];
+            break;
+            
+        case 'clima':
+            titulo = "Encuesta de Clima Laboral";
+            contenido = [
+                {titulo: "Instrucciones", texto: "Por favor, responda con sinceridad. Todas las respuestas son anónimas y confidenciales."},
+                {titulo: "Sección 1: Ambiente de Trabajo", texto: "Preguntas sobre condiciones físicas, recursos, herramientas de trabajo."},
+                {titulo: "Sección 2: Relaciones Interpersonales", texto: "Preguntas sobre comunicación, trabajo en equipo, confianza."},
+                {titulo: "Sección 3: Liderazgo", texto: "Preguntas sobre supervisión, feedback, reconocimiento."},
+                {titulo: "Sección 4: Desarrollo Profesional", texto: "Preguntas sobre oportunidades de crecimiento, formación, carrera."},
+                {titulo: "Sección 5: Compensación y Beneficios", texto: "Preguntas sobre salario, beneficios, equidad."}
+            ];
+            break;
     }
     
-    // Agregar logo (si está disponible)
-    try {
-        // Esta es una aproximación, en la práctica necesitarías convertir la imagen a base64
-        doc.addImage("logo.png", "PNG", 15, 15, 30, 10);
-    } catch (e) {
-        console.log("Logo no disponible para PDF");
-    }
+    // Agregar logo MIVRA (texto como placeholder)
+    doc.setFontSize(16);
+    doc.setTextColor(44, 62, 80); // Color primary de MIVRA
+    doc.text("MIVRA", 15, 15);
+    doc.setFontSize(10);
+    doc.text("personas + process", 15, 20);
     
     // Configurar PDF
     doc.setFontSize(20);
-    doc.setTextColor(44, 62, 80); // Color primary de MIVRA
-    doc.text(titulo, 105, 25, { align: 'center' });
+    doc.text(titulo, 105, 30, { align: 'center' });
+    
+    if (empresaId) {
+        doc.setFontSize(12);
+        doc.text(`Para: ${empresaNombre}`, 105, 40, { align: 'center' });
+    }
+    
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
     
-    let y = 40;
+    let y = 50;
     contenido.forEach((item, index) => {
         if (y > 270) {
             doc.addPage();
             y = 20;
+            
+            // Agregar logo en cada página
+            doc.setFontSize(16);
+            doc.setTextColor(44, 62, 80);
+            doc.text("MIVRA", 15, 15);
+            doc.setFontSize(10);
+            doc.text("personas + process", 15, 20);
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
         }
         
         doc.setFont(undefined, 'bold');
@@ -471,18 +650,35 @@ function generarPDF(tipo) {
     // Agregar pie de página con marca MIVRA
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
-    doc.text("MIVRA - personas + process", 105, 285, { align: 'center' });
+    doc.text("MIVRA - personas + process - Documento generado el " + new Date().toLocaleDateString(), 105, 285, { align: 'center' });
     
     // Guardar PDF
-    doc.save(`MIVRA_${titulo}.pdf`);
+    const fileName = `MIVRA_${titulo.replace(/\s+/g, '_')}_${empresaNombre.replace(/\s+/g, '_')}.pdf`;
+    doc.save(fileName);
     
-    // Registrar actividad
+    // Registrar documento y actividad
+    const nuevoDocumento = {
+        id: Date.now().toString(),
+        nombre: titulo,
+        tipo: tipo,
+        empresa: empresaNombre,
+        fecha: new Date().toLocaleDateString(),
+        fileName: fileName
+    };
+    
+    documentos.push(nuevoDocumento);
+    
     actividad.push({
         tipo: 'documento',
         accion: 'generado',
         objetivo: titulo,
+        empresa: empresaNombre,
         fecha: new Date().toISOString().split('T')[0]
     });
+    
     guardarDatos();
     loadDashboard();
+    loadGeneratedDocuments();
+    
+    alert(`Documento "${titulo}" generado correctamente para ${empresaNombre}`);
 }

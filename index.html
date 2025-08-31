@@ -13,7 +13,7 @@
                 <img src="./2.png" alt="MIVRA Logo" id="logo-img">
                 <div class="logo-text">
                     <h1>MIVRA</h1>
-                    <p>personas + procesos</p>
+                    <p>personas + process</p>
                 </div>
             </div>
             <nav>
@@ -94,17 +94,17 @@
                 <div class="service-card">
                     <h3>Check-Up Salud Laboral</h3>
                     <p>Evaluación express del clima laboral y procesos de RRHH.</p>
-                    <button class="btn-secondary" data-service="checkup">Seleccionar</button>
+                    <button class="btn-service" data-service="checkup">Seleccionar</button>
                 </div>
                 <div class="service-card">
                     <h3>Taller de Comunicación</h3>
                     <p>Sesión vivencial para mejorar la comunicación interna.</p>
-                    <button class="btn-secondary" data-service="comunicacion">Seleccionar</button>
+                    <button class="btn-service" data-service="comunicacion">Seleccionar</button>
                 </div>
                 <div class="service-card">
                     <h3>Design Primer Empleado</h3>
                     <p>Asesoría completa para la primera contratación.</p>
-                    <button class="btn-secondary" data-service="contratacion">Seleccionar</button>
+                    <button class="btn-service" data-service="contratacion">Seleccionar</button>
                 </div>
             </div>
             
@@ -116,21 +116,53 @@
         <!-- Sección Documentos -->
         <section id="documentos" class="content-section">
             <h2>Documentos y Plantillas</h2>
+            
+            <div class="documents-actions">
+                <div class="form-group">
+                    <label for="empresa-documento">Seleccionar Empresa:</label>
+                    <select id="empresa-documento">
+                        <option value="">Seleccione una empresa</option>
+                    </select>
+                </div>
+            </div>
+            
             <div class="documents-grid">
                 <div class="document-card">
                     <h3>Kit de Comunicación</h3>
                     <p>Plantillas para mejorar la comunicación interna.</p>
-                    <button class="btn-secondary" onclick="generarPDF('comunicacion')">Generar PDF</button>
+                    <button class="btn-document" data-document="comunicacion">Generar PDF</button>
                 </div>
                 <div class="document-card">
                     <h3>Checklist Onboarding</h3>
                     <p>Plan de 30 días para incorporación.</p>
-                    <button class="btn-secondary" onclick="generarPDF('onboarding')">Generar PDF</button>
+                    <button class="btn-document" data-document="onboarding">Generar PDF</button>
                 </div>
                 <div class="document-card">
                     <h3>Guía Primera Contratación</h3>
                     <p>Protocolo para primer empleado.</p>
-                    <button class="btn-secondary" onclick="generarPDF('contratacion')">Generar PDF</button>
+                    <button class="btn-document" data-document="contratacion">Generar PDF</button>
+                </div>
+                <div class="document-card">
+                    <h3>Informe de Evaluación</h3>
+                    <p>Formato completo de evaluación de desempeño.</p>
+                    <button class="btn-document" data-document="evaluacion">Generar PDF</button>
+                </div>
+                <div class="document-card">
+                    <h3>Plan Desarrollo</h3>
+                    <p>Plan de desarrollo individual para colaboradores.</p>
+                    <button class="btn-document" data-document="desarrollo">Generar PDF</button>
+                </div>
+                <div class="document-card">
+                    <h3>Encuesta Clima</h3>
+                    <p>Formulario para evaluación de clima laboral.</p>
+                    <button class="btn-document" data-document="clima">Generar PDF</button>
+                </div>
+            </div>
+            
+            <div class="generated-documents">
+                <h3>Documentos Generados</h3>
+                <div id="document-list">
+                    <p class="empty-state">No hay documentos generados aún</p>
                 </div>
             </div>
         </section>
